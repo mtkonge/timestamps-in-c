@@ -2,15 +2,15 @@
 #include <string.h>
 
 typedef struct TimeStamp {
-    int hours;
-    int minutes;
     int seconds;
+    int minutes;
+    int hours;
 } TimeStamp;
 
 void printTimeStamp(TimeStamp timeStamp)
 {
     printf(
-        "%d:%d:%d\n",
+        "Your time: %d:%d:%d\n",
         timeStamp.hours,
         timeStamp.minutes,
         timeStamp.seconds);
@@ -23,20 +23,24 @@ void sanitizeInput(char buffer[128])
             buffer[i] = '\0';
 }
 
-void TimeStampFromSeconds(TimeStamp timeStamp, int seconds)
+void timestamp_hours(TimeStamp* timeStamp)
 {
-    printf("not implemented");
+
+    timeStamp->minutes = (int)timeStamp->seconds / 60 % 60;
+    timeStamp->hours = (int)timeStamp->seconds / 60 / 60;
+    timeStamp->seconds = timeStamp->seconds % 60;    
+
 }
 
 int main()
 {
-    TimeStamp timeStamp = { .hours = 23, .minutes = 24, .seconds = 58 };
+    TimeStamp timeStamp = {.seconds = 28394 };
     char buffer[128] = "";
     printf("> ");
     fgets(buffer, 128, stdin);
     sanitizeInput(buffer);
     if (!strncmp("checkin", buffer, 7)) {
+        timestamp_hours(&timeStamp);
         printTimeStamp(timeStamp);
     }
-    printf("you typed \"%s\"\n", buffer);
 }
