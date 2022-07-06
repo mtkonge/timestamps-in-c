@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 typedef struct TimeStamp {
     int seconds;
@@ -23,24 +24,47 @@ void sanitizeInput(char buffer[128])
             buffer[i] = '\0';
 }
 
-void timestamp_hours(TimeStamp* timeStamp)
+void timestamp_encoder(TimeStamp* timeStamp)
 {
+    timeStamp->minutes = timeStamp->minutes + timeStamp->seconds / 60 % 60;
+    timeStamp->hours = timeStamp->hours + timeStamp->seconds / 3600;
+    timeStamp->seconds = timeStamp->seconds % 60;
+}
+void timestamp_decoder(TimeStamp* timeStamp)
+{
+    timeStamp->seconds = timeStamp->hours * 3600 + timeStamp->minutes * 60 + timeStamp->seconds;
+    timeStamp->minutes = 0;
+    timeStamp->hours = 0;
+}
 
-    timeStamp->minutes = (int)timeStamp->seconds / 60 % 60;
-    timeStamp->hours = (int)timeStamp->seconds / 60 / 60;
-    timeStamp->seconds = timeStamp->seconds % 60;    
+int secondsSinceEpoch()
+{
+    return time(NULL);
+}
 
+int calcCheckoutTime(int seconds)
+{
+    return secondsSinceEpoch() - seconds;
 }
 
 int main()
 {
-    TimeStamp timeStamp = {.seconds = 28394 };
+    int checkinTime;
+    TimeStamp timeStamp = { .hours = 20, .minutes = 12, .seconds = 29 };
     char buffer[128] = "";
-    printf("> ");
-    fgets(buffer, 128, stdin);
-    sanitizeInput(buffer);
-    if (!strncmp("checkin", buffer, 7)) {
-        timestamp_hours(&timeStamp);
-        printTimeStamp(timeStamp);
+    while (1) {
+        printf("> ");
+        fgets(buffer, 128, stdin);
+        sanitizeInput(buffer);
+        if (!strncmp("checkin", buffer, 7)) {
+            checkinTime = secondsSinceEpoch();
+            printTimeStamp(timeStamp);
+        }
+        if (!strncmp("checkout", buffer, 8)) {
+            timestamp_decoder(&timeStamp);
+            timeStamp.seconds += calcCheckoutTime(checkinTime);
+            timestamp_encoder(&timeStamp);
+            printTimeStamp(timeStamp);
+        }
     }
 }

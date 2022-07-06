@@ -5,7 +5,7 @@ OFILES= \
 	main.o
 
 CC=gcc
-CFLAGS=-std=c17 -Wall -Werror
+CFLAGS=-std=c17 -Wall -Werror -pedantic -Wpedantic -pedantic-errors
 
 LD=gcc
 LFLAGS=
