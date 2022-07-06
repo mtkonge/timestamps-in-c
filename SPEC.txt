@@ -1,0 +1,11 @@
+
+$ ./timestamps
+> checkin terryd
+> checkout terryd
+You worked hh:mm:ss
+> history terryd
+Checked in      Checked out     Time total
+XX:XX:XX        XX:XX:XX        XX:XX:XX
+> exit
+$ 
+
