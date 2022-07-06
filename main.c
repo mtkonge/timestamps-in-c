@@ -1,70 +1,59 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include "timespan.h"
 
-typedef struct TimeStamp {
-    int seconds;
-    int minutes;
-    int hours;
-} TimeStamp;
+typedef struct Checks {
+    time_t checkin_date;
+    time_t checkout_date;
+} Checks;
 
-void printTimeStamp(TimeStamp timeStamp)
-{
-    printf(
-        "Your time: %d:%d:%d\n",
-        timeStamp.hours,
-        timeStamp.minutes,
-        timeStamp.seconds);
-}
 
-void sanitizeInput(char buffer[128])
+
+
+
+void sanitize_input(char buffer[128])
 {
     for (int i = 0; i < strlen(buffer); i++)
         if (buffer[i] == '\n')
             buffer[i] = '\0';
 }
 
-void timestamp_encoder(TimeStamp* timeStamp)
+
+int calc_checkout_time(time_t epochTime, int seconds)
 {
-    timeStamp->minutes = timeStamp->minutes + timeStamp->seconds / 60 % 60;
-    timeStamp->hours = timeStamp->hours + timeStamp->seconds / 3600;
-    timeStamp->seconds = timeStamp->seconds % 60;
-}
-void timestamp_decoder(TimeStamp* timeStamp)
-{
-    timeStamp->seconds = timeStamp->hours * 3600 + timeStamp->minutes * 60 + timeStamp->seconds;
-    timeStamp->minutes = 0;
-    timeStamp->hours = 0;
+    return epochTime - seconds;
 }
 
-int secondsSinceEpoch()
-{
-    return time(NULL);
-}
-
-int calcCheckoutTime(int seconds)
-{
-    return secondsSinceEpoch() - seconds;
-}
 
 int main()
 {
+    time_t epochTime = time(NULL);
     int checkinTime;
-    TimeStamp timeStamp = { .hours = 20, .minutes = 12, .seconds = 29 };
+    // Checks checks;
+    TimeSpan timeSpan = { .hours = 20, .minutes = 12, .seconds = 29 };
+
     char buffer[128] = "";
     while (1) {
         printf("> ");
         fgets(buffer, 128, stdin);
-        sanitizeInput(buffer);
+        sanitize_input(buffer);
         if (!strncmp("checkin", buffer, 7)) {
-            checkinTime = secondsSinceEpoch();
-            printTimeStamp(timeStamp);
+            
+            checkinTime = epochTime;
+            timespan_print(timeSpan);
+
         }
         if (!strncmp("checkout", buffer, 8)) {
-            timestamp_decoder(&timeStamp);
-            timeStamp.seconds += calcCheckoutTime(checkinTime);
-            timestamp_encoder(&timeStamp);
-            printTimeStamp(timeStamp);
+            timespan_decoder(&timeSpan);
+            timeSpan.seconds += calc_checkout_time(epochTime, checkinTime);
+            timespan_encoder(&timeSpan);
+            timespan_print(timeSpan);
+        }
+        if (!strncmp("total", buffer, 5)) {
+            
+
+            // printf("now: %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
         }
     }
 }

@@ -2,7 +2,8 @@
 OUT=timestamps
 
 OFILES= \
-	main.o
+	main.o \
+	timespan.o
 
 CC=gcc
 CFLAGS=-std=c17 -Wall -Werror -pedantic -Wpedantic -pedantic-errors
