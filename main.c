@@ -2,15 +2,27 @@
 #include <string.h>
 #include <time.h>
 #include "timespan.h"
+#include <stdbool.h>
+
+
+typedef struct Initializer {
+     bool isInitialized;
+     time_t value;
+}Initializer;
 
 typedef struct Checks {
-    time_t checkin_date;
-    time_t checkout_date;
+    Initializer checkin_date[8];
+    Initializer checkout_date[8];
 } Checks;
 
-
-
-
+typedef struct Date {
+    int second;
+    int minute;
+    int hour;
+    int day;
+    int month;
+    int year;
+} Date;
 
 void sanitize_input(char buffer[128])
 {
@@ -25,13 +37,17 @@ int calc_checkout_time(time_t epochTime, int seconds)
     return epochTime - seconds;
 }
 
-
 int main()
 {
-    time_t epochTime = time(NULL);
     int checkinTime;
-    // Checks checks;
+    Checks checks;
+    int checkout_length = sizeof checks.checkout_date / sizeof *checks.checkout_date;
     TimeSpan timeSpan = { .hours = 20, .minutes = 12, .seconds = 29 };
+    
+
+    for (int i = 0; i < checkout_length; i++) {
+        checks.checkout_date[i].isInitialized = false;     
+    }
 
     char buffer[128] = "";
     while (1) {
@@ -40,19 +56,22 @@ int main()
         sanitize_input(buffer);
         if (!strncmp("checkin", buffer, 7)) {
             
-            checkinTime = epochTime;
+            checkinTime = time(NULL);
             timespan_print(timeSpan);
 
         }
         if (!strncmp("checkout", buffer, 8)) {
             timespan_decoder(&timeSpan);
-            timeSpan.seconds += calc_checkout_time(epochTime, checkinTime);
+            timeSpan.seconds += calc_checkout_time(time(NULL), checkinTime);
             timespan_encoder(&timeSpan);
             timespan_print(timeSpan);
         }
         if (!strncmp("total", buffer, 5)) {
-            
-
+            int checkout_length = sizeof checks.checkout_date / sizeof *checks.checkout_date;
+            for (int i = 0; i < checkout_length; i++) {
+                if (checks.checkout_date[i].isInitialized == true)
+                    printf("%ld\n", checks.checkout_date[i].value);
+            }
             // printf("now: %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
         }
     }
