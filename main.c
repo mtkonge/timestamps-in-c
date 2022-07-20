@@ -16,13 +16,32 @@ typedef struct Checks {
 } Checks;
 
 typedef struct Date {
-    int second;
-    int minute;
-    int hour;
     int day;
     int month;
     int year;
 } Date;
+
+int which_month(int time, int dateInMonths[]) {
+    int days = time / 86400;
+    for (int i = 0; i < 11; i++) {
+        if (days > dateInMonths[i]) {
+            days -= dateInMonths[i];
+            continue;
+        }
+        return i+1;
+    }
+    return 69;
+}
+
+Date date_encoder(int secondsFromEpoch, Date EPOCH, int dateInMonths[]) {
+    Date currentDate = 
+    {
+        .year = EPOCH.year + secondsFromEpoch / 31557600,
+        .month = which_month(secondsFromEpoch % 31557600, dateInMonths),
+        .day = 0
+    };
+    return currentDate;
+}
 
 void sanitize_input(char buffer[128])
 {
@@ -42,7 +61,9 @@ int main()
     int checkinTime;
     Checks checks;
     int checkout_length = sizeof checks.checkout_date / sizeof *checks.checkout_date;
-    TimeSpan timeSpan = { .hours = 20, .minutes = 12, .seconds = 29 };
+    TimeSpan timeSpan = { .hours = 0, .minutes = 0, .seconds = 0 };
+    int daysInMonths[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    #define Date EPOCH = {.day = 1, .month = 1, .year = 1970};
     
 
     for (int i = 0; i < checkout_length; i++) {
@@ -55,7 +76,8 @@ int main()
         fgets(buffer, 128, stdin);
         sanitize_input(buffer);
         if (!strncmp("checkin", buffer, 7)) {
-            
+            int something = time(NULL);
+            printf("%d\n", something);
             checkinTime = time(NULL);
             timespan_print(timeSpan);
 
@@ -67,12 +89,10 @@ int main()
             timespan_print(timeSpan);
         }
         if (!strncmp("total", buffer, 5)) {
-            int checkout_length = sizeof checks.checkout_date / sizeof *checks.checkout_date;
             for (int i = 0; i < checkout_length; i++) {
                 if (checks.checkout_date[i].isInitialized == true)
                     printf("%ld\n", checks.checkout_date[i].value);
             }
-            // printf("now: %d-%02d-%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
         }
     }
 }
