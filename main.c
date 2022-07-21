@@ -10,10 +10,10 @@ typedef struct Initializer {
      time_t value;
 }Initializer;
 
-typedef struct Checks {
+typedef struct CheckinData {
     Initializer checkin_date[8];
     Initializer checkout_date[8];
-} Checks;
+} CheckinData;
 
 typedef struct Date {
     int day;
@@ -23,7 +23,7 @@ typedef struct Date {
 
 int which_month(int time, int dateInMonths[]) {
     int days = time / 86400;
-    for (int i = 0; i < 11; i++) {
+    for(int i = 0; i < 11; i++) {
         if (days > dateInMonths[i]) {
             days -= dateInMonths[i];
             continue;
@@ -34,13 +34,24 @@ int which_month(int time, int dateInMonths[]) {
 }
 
 Date date_encoder(int secondsFromEpoch, Date EPOCH, int dateInMonths[]) {
+    int years = secondsFromEpoch / 31557600;
+    int restTime = (secondsFromEpoch - (years * 31557600))/9;
     Date currentDate = 
     {
         .year = EPOCH.year + secondsFromEpoch / 31557600,
         .month = which_month(secondsFromEpoch % 31557600, dateInMonths),
-        .day = 0
+        .day = restTime / 86400
     };
     return currentDate;
+}
+
+void date_print(Date date)
+{
+    printf(
+        "Your time: %d:%d:%d\n",
+        date.day,
+        date.month,
+        date.year);
 }
 
 void sanitize_input(char buffer[128])
@@ -59,15 +70,17 @@ int calc_checkout_time(time_t epochTime, int seconds)
 int main()
 {
     int checkinTime;
-    Checks checks;
-    int checkout_length = sizeof checks.checkout_date / sizeof *checks.checkout_date;
+    CheckinData checkinData;
+    int checkout_length = sizeof checkinData.checkout_date / sizeof *checkinData.checkout_date;
     TimeSpan timeSpan = { .hours = 0, .minutes = 0, .seconds = 0 };
+    Date date = {.day = 0, .month = 0, .year = 0};
     int daysInMonths[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    #define Date EPOCH = {.day = 1, .month = 1, .year = 1970};
+    Date EPOCH = {.day = 1, .month = 1, .year = 1970};
+    
     
 
     for (int i = 0; i < checkout_length; i++) {
-        checks.checkout_date[i].isInitialized = false;     
+        checkinData.checkout_date[i].isInitialized = false;     
     }
 
     char buffer[128] = "";
@@ -76,11 +89,10 @@ int main()
         fgets(buffer, 128, stdin);
         sanitize_input(buffer);
         if (!strncmp("checkin", buffer, 7)) {
-            int something = time(NULL);
-            printf("%d\n", something);
             checkinTime = time(NULL);
+            date = date_encoder(checkinTime, EPOCH, daysInMonths);
+            date_print(date);
             timespan_print(timeSpan);
-
         }
         if (!strncmp("checkout", buffer, 8)) {
             timespan_decoder(&timeSpan);
@@ -90,8 +102,8 @@ int main()
         }
         if (!strncmp("total", buffer, 5)) {
             for (int i = 0; i < checkout_length; i++) {
-                if (checks.checkout_date[i].isInitialized == true)
-                    printf("%ld\n", checks.checkout_date[i].value);
+                if (checkinData.checkout_date[i].isInitialized == true)
+                    printf("%ld\n", checkinData.checkout_date[i].value);
             }
         }
     }
