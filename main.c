@@ -34,7 +34,7 @@ int which_month(int time, int dateInMonths[]) {
 }
 
 int days_from_january_till_month(int dateInMonths[], int month) {
-    int days = 0;
+    int days = -1;
     for(int i = 0; i < month-1; i++) {
         days += dateInMonths[i];
     }
@@ -50,8 +50,7 @@ Date date_encoder(int secondsFromEpoch, Date EPOCH, int dateInMonths[]) {
         .month = which_month(secondsFromEpoch % 31557600, dateInMonths),
     };
 
-    currentDate.day = (secondsFromEpoch % 31557600 - (days_from_january_till_month(dateInMonths, currentDate.month)))/86400;
-
+    currentDate.day = (secondsFromEpoch - (currentDate.year - EPOCH.year) * 31557600)/86400 - days_from_january_till_month(dateInMonths, currentDate.month) ;
     return currentDate;
 }
 
