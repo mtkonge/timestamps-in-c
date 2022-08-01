@@ -6,6 +6,8 @@
 
 
 typedef struct Date {
+    int minute;
+    int hour;
     int day;
     int month;
     int year;
@@ -41,17 +43,24 @@ Date date_encoder(int secondsFromEpoch, Date EPOCH, int dateInMonths[]) {
     {
         .year = EPOCH.year + secondsFromEpoch / 31557600,
         .month = which_month(secondsFromEpoch % 31557600, dateInMonths),
+        .hour = 0,
+        .minute = 0
     };
 
-    currentDate.day = (secondsFromEpoch - (currentDate.year - EPOCH.year) * 31557600)/86400 - days_from_january_till_month(dateInMonths, currentDate.month) ;
+    currentDate.day = (secondsFromEpoch - (currentDate.year - EPOCH.year) * 31557600)/86400 - days_from_january_till_month(dateInMonths, currentDate.month);
+    currentDate.hour = ((secondsFromEpoch - (currentDate.year - EPOCH.year) * 31557600) - (days_from_january_till_month(dateInMonths, currentDate.month) + currentDate.day)*86400)/3600;
+    currentDate.minute = (((secondsFromEpoch - (currentDate.year - EPOCH.year) * 31557600) - (days_from_january_till_month(dateInMonths, currentDate.month) + currentDate.day)*86400) - currentDate.hour * 3600)/60;
+    currentDate.hour += 2;
     return currentDate;
 }
 
 void date_print(char text[], Date date)
 {
     printf(
-        "%s: %d:%d:%d\n",
+        "%s: %d:%d:%d:%d:%d\n",
         text,
+        date.hour,
+        date.minute,
         date.day,
         date.month,
         date.year);
